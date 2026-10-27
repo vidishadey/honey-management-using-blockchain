@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Honey Batch — Honey Chain</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <span class="brand-icon">🍯</span>
+        <span>Honey Chain</span>
+        <span class="brand-tag">Blockchain MVP</span>
+      </a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link">Dashboard</a></li>
+          <li><a href="register.html" class="nav-link active">Register Batch</a></li>
+          <li><a href="blockchain.html" class="nav-link">Blockchain Ledger</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-wrapper" style="max-width: 860px;">
+    <!-- Breadcrumb / Back Navigation -->
+    <div style="margin-bottom: 1rem;">
+      <a href="index.html" style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.9rem;">
+        <span>←</span> Back to Beekeeper Dashboard
+      </a>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="header-title-group">
+        <h1>🍯 Register New Honey Batch</h1>
+        <p class="header-subtitle">Anchor harvest parameters and originate a tamper-evident audit block</p>
+      </div>
+    </div>
+
+    <!-- Form Card -->
+    <section class="card">
+      <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+        <span>ℹ</span>
+        <div>
+          <strong>Blockchain Notice:</strong> Once submitted, a unique Batch ID is generated, stored in MongoDB, and permanently sealed with a SHA-256 cryptographic hash into the ledger.
+        </div>
+      </div>
+
+      <form id="batch-registration-form" novalidate>
+        <!-- Row 1: Beekeeper & Location -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="beekeeperName">
+              Beekeeper Name / ID <span class="required-star">*</span>
+            </label>
+            <input type="text" id="beekeeperName" name="beekeeperName" placeholder="e.g. Ronald Vance (BKP-042)" required>
+            <div class="input-hint">The certified beekeeper or apiary manager</div>
+          </div>
+
+          <div class="form-group">
+            <label for="originLocation">
+              Apiary / Origin Location <span class="required-star">*</span>
+            </label>
+            <input type="text" id="originLocation" name="originLocation" placeholder="e.g. Pine Valley Farm, Field 4" required>
+            <div class="input-hint">Geographic location or apiary field identifier</div>
+          </div>
+        </div>
+
+        <!-- Row 2: Hive ID & Quantity -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="hiveId">
+              Hive Identifier <span class="required-star">*</span>
+            </label>
+            <input type="text" id="hiveId" name="hiveId" placeholder="e.g. HIVE-A12" required>
+            <div class="input-hint">Specific beehive box or colony code</div>
+          </div>
+
+          <div class="form-group">
+            <label for="quantityKg">
+              Honey Quantity (kg) <span class="required-star">*</span>
+            </label>
+            <input type="number" id="quantityKg" name="quantityKg" min="0.1" step="0.1" placeholder="e.g. 45.5" required>
+            <div class="input-hint">Total yield extracted in kilograms (must be &gt; 0)</div>
+          </div>
+        </div>
+
+        <!-- Row 3: Dates -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="harvestDate">
+              Harvest Date <span class="required-star">*</span>
+            </label>
+            <input type="date" id="harvestDate" name="harvestDate" required>
+            <div class="input-hint">Date frames were removed from hive</div>
+          </div>
+
+          <div class="form-group">
+            <label for="extractionDate">
+              Extraction Date <span class="required-star">*</span>
+            </label>
+            <input type="date" id="extractionDate" name="extractionDate" required>
+            <div class="input-hint">Date honey was spun / extracted (cannot precede harvest)</div>
+          </div>
+        </div>
+
+        <!-- Row 4: Quality Status -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="qualityStatus">
+              Initial Quality-Testing Status <span class="required-star">*</span>
+            </label>
+            <select id="qualityStatus" name="qualityStatus" required>
+              <option value="Pending" selected>⏳ Pending Laboratory Analysis</option>
+              <option value="Passed">✔ Passed (Moisture & Pollen Certified)</option>
+              <option value="Failed">✖ Failed (Non-Compliant)</option>
+            </select>
+            <div class="input-hint">Can be updated later when lab results arrive</div>
+          </div>
+
+          <div class="form-group">
+            <label for="notes">
+              Notes / Floral Source (Optional)
+            </label>
+            <input type="text" id="notes" name="notes" placeholder="e.g. Acacia & Wild Clover blend, moisture 17.5%">
+            <div class="input-hint">Floral variety, aroma, moisture, or batch observations</div>
+          </div>
+        </div>
+
+        <!-- Form Validation Alert Area -->
+        <div id="form-error-alert" class="alert alert-danger" style="display:none; margin-top: 1rem;">
+          <span>✖</span>
+          <div id="form-error-text"></div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <a href="index.html" class="btn btn-secondary">Cancel</a>
+          <button type="submit" id="submit-btn" class="btn btn-primary">
+            <span>🔒</span> Save & Anchor on Blockchain
+          </button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <!-- Success Modal Dialog -->
+  <div id="success-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="color:#065f46; display:flex; align-items:center; gap:0.4rem;">
+          <span>✔</span> Batch Registered Successfully!
+        </h3>
+      </div>
+      <div style="margin-bottom: 1.25rem;">
+        <p>Your honey batch has been persisted in MongoDB and anchored onto the local blockchain ledger.</p>
+        <div style="background:var(--bg-gold-light); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-gold); margin:1rem 0;">
+          <div style="font-size:0.85rem; color:var(--text-muted);">Assigned Batch ID:</div>
+          <div id="modal-batch-id" class="mono-cell" style="font-size:1.4rem; font-weight:800; color:var(--primary-dark-gold); margin-bottom:0.5rem;"></div>
+          
+          <div style="font-size:0.85rem; color:var(--text-muted);">Blockchain Block Index:</div>
+          <div id="modal-block-index" style="font-weight:700; margin-bottom:0.5rem;"></div>
+
+          <div style="font-size:0.85rem; color:var(--text-muted);">Block SHA-256 Hash:</div>
+          <div id="modal-block-hash" class="hash-snippet"></div>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+        <button id="modal-btn-another" class="btn btn-secondary btn-sm">Register Another</button>
+        <a id="modal-btn-view" href="#" class="btn btn-primary btn-sm">
+          <span>📱</span> View Batch & QR Code
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div style="max-width: 1200px; margin: 0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; align-items:center;">
+      <span><strong>Honey Chain</strong> — Academic DTI / Final-Year Prototype</span>
+      <span>Built with Node.js, Express, MongoDB & SHA-256 Hashing</span>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/register.js"></script>
+</body>
+</html>

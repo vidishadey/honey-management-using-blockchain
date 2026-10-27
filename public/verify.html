@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Public Honey Traceability Certificate — Honey Chain</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .consumer-card {
+      background: #ffffff;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 2rem;
+    }
+    .cert-seal {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--bg-gold-light);
+      border: 2px solid var(--border-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      margin: 0 auto 1rem auto;
+    }
+    .disclaimer-card {
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      border-left: 5px solid;
+    }
+  </style>
+</head>
+<body style="background-color: #f7f4ed;">
+  <!-- Public Minimal Header -->
+  <header class="navbar" style="border-bottom: 2px solid var(--border-gold);">
+    <div class="nav-container" style="justify-content:center;">
+      <a href="index.html" class="brand">
+        <span class="brand-icon">🍯</span>
+        <span>Honey Chain</span>
+        <span class="brand-tag">Consumer Traceability</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-wrapper" style="max-width: 820px;">
+    <!-- Direct Batch Lookup (when opened without query param) -->
+    <div id="batch-lookup-section" class="card" style="display:none; text-align:center; padding: 2rem;">
+      <h2 style="margin-bottom:0.5rem;">🔍 Verify a Honey Jar</h2>
+      <p style="margin-bottom:1.25rem;">Enter the Batch ID printed on your honey jar label:</p>
+      <div style="display:flex; justify-content:center; gap:0.5rem; max-width:400px; margin:0 auto;">
+        <input type="text" id="manual-batch-input" placeholder="e.g. HC-2026-7B9F" style="text-transform:uppercase;">
+        <button id="btn-manual-lookup" class="btn btn-primary">Verify</button>
+      </div>
+    </div>
+
+    <!-- Verification Loading State -->
+    <div id="verification-loading" class="card" style="text-align:center; padding:3rem;">
+      <div style="font-size:2.5rem; margin-bottom:1rem; animation: pulse 1.5s infinite;">🍯</div>
+      <h2>Authenticating Honey Traceability Record...</h2>
+      <p style="color:var(--text-muted); margin-top:0.5rem;">Cross-referencing blockchain blocks and verifying cryptographic hashes.</p>
+    </div>
+
+    <!-- Verification Error State -->
+    <div id="verification-error" class="card" style="display:none; text-align:center; padding:3rem;">
+      <div style="font-size:2.5rem; margin-bottom:1rem;">❌</div>
+      <h2 id="error-title">Batch Not Found</h2>
+      <p id="error-message" style="margin-top:0.5rem; color:#dc2626;"></p>
+      <div style="margin-top:1.5rem;">
+        <a href="verify.html" class="btn btn-secondary">Try Another Batch ID</a>
+        <a href="index.html" class="btn btn-primary" style="margin-left:0.5rem;">Go to Beekeeper Portal</a>
+      </div>
+    </div>
+
+    <!-- Consumer Certificate Display -->
+    <div id="certificate-display" style="display:none;">
+      <div class="consumer-card">
+        <div class="cert-seal">🍯</div>
+        <div style="text-align:center; margin-bottom:1.75rem;">
+          <h1 style="font-size:1.75rem; margin-bottom:0.25rem;">Digital Certificate of Origin &amp; Traceability</h1>
+          <p style="font-size:0.95rem; color:var(--text-muted);">
+            Cryptographically Anchored on the Honey Chain Ledger
+          </p>
+          <div style="margin-top:0.75rem;">
+            <span class="mono-cell" id="cert-batch-id" style="font-size:1.4rem; background:var(--bg-gold-light); padding:0.35rem 0.85rem; border-radius:var(--radius-sm); border:1px solid var(--border-gold);">
+              --
+            </span>
+          </div>
+        </div>
+
+        <!-- Real-time Blockchain Integrity Badge -->
+        <div id="cert-integrity-badge-box" class="alert" style="justify-content:center; text-align:center; margin-bottom:1.75rem;">
+          <div id="cert-integrity-text" style="font-weight:700;"></div>
+        </div>
+
+        <!-- Core Harvest Parameters -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1.25rem; background:var(--bg-card-subtle); padding:1.25rem; border-radius:var(--radius-sm); border:1px solid var(--border-light); margin-bottom:1.5rem;">
+          <div>
+            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Registered Beekeeper</div>
+            <div id="cert-beekeeper" style="font-weight:700; font-size:1.05rem; margin-top:0.2rem;">--</div>
+          </div>
+
+          <div>
+            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Origin Apiary</div>
+            <div id="cert-origin" style="font-weight:700; font-size:1.05rem; margin-top:0.2rem;">--</div>
+          </div>
+
+          <div>
+            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Hive Identifier</div>
+            <div id="cert-hive" style="font-weight:700; font-size:1.05rem; margin-top:0.2rem;">--</div>
+          </div>
+
+          <div>
+            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Quality Testing Status</div>
+            <div id="cert-quality-status" style="margin-top:0.2rem;">--</div>
+          </div>
+
+          <div>
+            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Harvest Date</div>
+            <div id="cert-harvest-date" style="font-weight:600; margin-top:0.2rem;">--</div>
+          </div>
+
+          <div>
+            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Extraction Date</div>
+            <div id="cert-extraction-date" style="font-weight:600; margin-top:0.2rem;">--</div>
+          </div>
+
+          <div>
+            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Honey Quantity Yield</div>
+            <div id="cert-quantity" style="font-weight:700; color:var(--primary-dark-gold); margin-top:0.2rem;">--</div>
+          </div>
+
+          <div>
+            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Registered On</div>
+            <div id="cert-registered-date" style="font-weight:600; margin-top:0.2rem;">--</div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div style="margin-bottom:1.5rem;">
+          <div style="font-size:0.8rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Floral Profile &amp; Beekeeper Notes:</div>
+          <div id="cert-notes" style="font-size:0.95rem; color:var(--text-secondary); margin-top:0.3rem; font-style:italic;">--</div>
+        </div>
+
+        <!-- Supply Chain Audit Trail -->
+        <div style="border-top:1px solid var(--border-light); padding-top:1.5rem;">
+          <h2 style="font-size:1.15rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.4rem;">
+            <span>⛓</span> Verified Supply Chain Audit Trail
+          </h2>
+          <div class="timeline" id="cert-timeline"></div>
+        </div>
+      </div>
+
+      <!-- CRITICAL THREE-PILLAR VIVA EDUCATIONAL DISCLAIMER -->
+      <section class="card" style="border: 2px solid var(--border-gold); background: #ffffff;">
+        <h2 style="font-size:1.25rem; display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem; color:var(--primary-dark-gold);">
+          <span>🎓</span> Understanding This Verification: Three Critical Dimensions
+        </h2>
+        <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:1.25rem;">
+          As part of the academic Honey Chain project, it is essential for consumers, beekeepers, and examination evaluators to distinguish between the three distinct levels of verification provided:
+        </p>
+
+        <!-- Pillar 1 -->
+        <div class="disclaimer-card" style="background:#eff6ff; border-color:#3b82f6;">
+          <h3 style="font-size:1rem; color:#1e40af; margin-bottom:0.3rem;">
+            1. The Application Record (What Was Entered)
+          </h3>
+          <p id="disclaimer-record-text" style="font-size:0.88rem; color:#1e3a8a;">
+            The harvest location, dates, and yield parameters displayed above reflect the data officially input by the registered beekeeper.
+          </p>
+        </div>
+
+        <!-- Pillar 2 -->
+        <div class="disclaimer-card" style="background:#ecfdf5; border-color:#10b981;">
+          <h3 style="font-size:1rem; color:#065f46; margin-bottom:0.3rem;">
+            2. Cryptographic Blockchain Integrity (Proof Against Alteration)
+          </h3>
+          <p id="disclaimer-integrity-text" style="font-size:0.88rem; color:#064e3b;">
+            SHA-256 cryptographic hashes guarantee that since this batch was recorded into the ledger, no data has been modified, forged, or retroactively edited by any party.
+          </p>
+        </div>
+
+        <!-- Pillar 3 -->
+        <div class="disclaimer-card" style="background:#fffbeb; border-color:#f59e0b;">
+          <h3 style="font-size:1rem; color:#92400e; margin-bottom:0.3rem;">
+            3. Physical Honey Purity Limitation (The "Oracle Problem")
+          </h3>
+          <p id="disclaimer-purity-text" style="font-size:0.88rem; color:#78350f;">
+            <strong>Academic Note:</strong> A blockchain ledger protects information against undetected digital alteration. However, software algorithms cannot independently prove that physical honey in the jar is pure without accredited laboratory pollen/C4-sugar analysis and tamper-evident physical seals.
+          </p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div style="max-width: 1200px; margin: 0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; align-items:center;">
+      <span><strong>Honey Chain</strong> — Academic DTI / Final-Year Prototype</span>
+      <span>Built with Node.js, Express, MongoDB & SHA-256 Hashing</span>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/verify.js"></script>
+</body>
+</html>

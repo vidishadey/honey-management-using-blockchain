@@ -1,0 +1,28 @@
+{
+  "name": "honey-chain",
+  "version": "1.0.0",
+  "description": "Blockchain-Based Honey Traceability and Smart Beekeeping Management MVP",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node test/blockchain.test.js"
+  },
+  "keywords": [
+    "blockchain",
+    "honey-traceability",
+    "beekeeping",
+    "sha256",
+    "qr-code",
+    "college-project"
+  ],
+  "author": "Antigravity & CS Undergrad",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.9.5",
+    "qrcode": "^1.5.4"
+  }
+}

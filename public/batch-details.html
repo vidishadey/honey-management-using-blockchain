@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batch Details & QR Code — Honey Chain</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    @media print {
+      body * { visibility: hidden; }
+      #printable-qr-section, #printable-qr-section * { visibility: visible; }
+      #printable-qr-section {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        display: block !important;
+        text-align: center;
+        padding: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <span class="brand-icon">🍯</span>
+        <span>Honey Chain</span>
+        <span class="brand-tag">Blockchain MVP</span>
+      </a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link">Dashboard</a></li>
+          <li><a href="register.html" class="nav-link">Register Batch</a></li>
+          <li><a href="blockchain.html" class="nav-link">Blockchain Ledger</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+    <!-- Breadcrumb -->
+    <div style="margin-bottom: 1rem;">
+      <a href="index.html" style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.9rem;">
+        <span>←</span> Back to Beekeeper Dashboard
+      </a>
+    </div>
+
+    <!-- Batch Title Header -->
+    <div class="page-header">
+      <div class="header-title-group">
+        <h1>
+          <span>📦 Batch</span>
+          <span id="header-batch-id" class="mono-cell" style="font-size:1.85rem;">Loading...</span>
+        </h1>
+        <p class="header-subtitle" id="header-batch-sub">Loading batch parameters...</p>
+      </div>
+      <div style="display:flex; gap:0.5rem; align-items:center;">
+        <button id="btn-open-status-modal" class="btn btn-secondary">
+          <span>🧪</span> Update Quality Status
+        </button>
+        <a id="btn-consumer-view" href="#" target="_blank" class="btn btn-primary">
+          <span>📱</span> Open Consumer Page
+        </a>
+      </div>
+    </div>
+
+    <!-- Two-column Grid: Details + QR Card -->
+    <div class="details-grid">
+      <!-- Left Column: Batch Parameters & Audit Timeline -->
+      <div>
+        <!-- Parameters Card -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <span>📋</span> Harvest & Extraction Parameters
+            </h2>
+            <div id="batch-status-badge"></div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1.25rem;">
+            <div>
+              <div style="font-size:0.82rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Beekeeper</div>
+              <div id="detail-beekeeper" style="font-weight:600; font-size:1.05rem;">--</div>
+            </div>
+
+            <div>
+              <div style="font-size:0.82rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Origin Apiary</div>
+              <div id="detail-origin" style="font-weight:600; font-size:1.05rem;">--</div>
+            </div>
+
+            <div>
+              <div style="font-size:0.82rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Hive ID</div>
+              <div id="detail-hive" style="font-weight:600; font-size:1.05rem;">--</div>
+            </div>
+
+            <div>
+              <div style="font-size:0.82rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Honey Quantity</div>
+              <div id="detail-quantity" style="font-weight:700; font-size:1.05rem; color:var(--primary-dark-gold);">--</div>
+            </div>
+
+            <div>
+              <div style="font-size:0.82rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Harvest Date</div>
+              <div id="detail-harvest-date" style="font-weight:600;">--</div>
+            </div>
+
+            <div>
+              <div style="font-size:0.82rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Extraction Date</div>
+              <div id="detail-extraction-date" style="font-weight:600;">--</div>
+            </div>
+          </div>
+
+          <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid var(--border-subtle);">
+            <div style="font-size:0.82rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.25rem;">Floral Notes & Observations</div>
+            <div id="detail-notes" style="color:var(--text-secondary); font-style:italic;">--</div>
+          </div>
+        </section>
+
+        <!-- Chronological Blockchain Audit History Card -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <span>⛓</span> Tamper-Evident Blockchain Audit Trail
+            </h2>
+            <span style="font-size:0.85rem; color:var(--text-muted);" id="event-count-badge">0 Events Anchored</span>
+          </div>
+
+          <p style="font-size:0.9rem; margin-bottom:1rem;">
+            Every batch lifecycle event generates a cryptographically signed SHA-256 block linked to the preceding block. Historical events are never overwritten.
+          </p>
+
+          <div class="timeline" id="batch-timeline">
+            <!-- Timeline items rendered dynamically -->
+          </div>
+        </section>
+      </div>
+
+      <!-- Right Column: QR Code & Packaging Label Card -->
+      <div>
+        <section class="card qr-card" id="printable-qr-section">
+          <h2 class="card-title" style="margin-bottom:0.25rem;">
+            <span>🏷</span> Honey Jar QR Label
+          </h2>
+          <p style="font-size:0.82rem; color:var(--text-muted);">
+            Scan to view public consumer traceability record
+          </p>
+
+          <div class="qr-image-wrapper">
+            <img id="qr-image" src="" alt="Batch Verification QR Code">
+          </div>
+
+          <div style="font-size:0.85rem; font-weight:700; color:var(--primary-dark-gold);" id="qr-batch-label">
+            --
+          </div>
+
+          <div class="qr-link-copy">
+            <input type="text" id="qr-link-input" readonly style="font-size:0.78rem; padding:0.4rem; background:var(--bg-card-subtle);">
+            <button id="btn-copy-link" class="btn btn-secondary btn-sm" title="Copy verification URL">
+              📋 Copy
+            </button>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:0.5rem; width:100%; margin-top:1.25rem;">
+            <a id="btn-download-qr" href="#" download="honey-chain-qr.png" class="btn btn-secondary btn-sm" style="width:100%;">
+              <span>⬇</span> Download QR Code (PNG)
+            </a>
+            <button id="btn-print-qr" class="btn btn-secondary btn-sm" style="width:100%;">
+              <span>🖨</span> Print Jar Label
+            </button>
+          </div>
+        </section>
+
+        <!-- Educational Viva Reminder -->
+        <div class="card" style="background:var(--bg-gold-light); border-color:var(--border-gold);">
+          <h3 style="font-size:0.95rem; display:flex; align-items:center; gap:0.35rem; margin-bottom:0.5rem; color:var(--primary-dark-gold);">
+            <span>🎓</span> Viva Examination Tip
+          </h3>
+          <p style="font-size:0.83rem; line-height:1.45; color:var(--text-secondary);">
+            The QR code points directly to the <strong>Consumer Verification Page</strong>. When an examiner tests the QR code, explain that the hash is computed server-side and cross-validated across all previous blocks in the ledger.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Status Update Modal -->
+  <div id="status-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="display:flex; align-items:center; gap:0.4rem;">
+          <span>🧪</span> Update Quality Testing Status
+        </h3>
+        <button id="btn-close-status-modal" class="modal-close-btn">&times;</button>
+      </div>
+
+      <form id="status-update-form">
+        <div class="form-group">
+          <label for="modal-quality-select">Testing Status <span class="required-star">*</span></label>
+          <select id="modal-quality-select" required>
+            <option value="Pending">⏳ Pending Analysis</option>
+            <option value="Passed">✔ Passed (Moisture & Pollen Certified)</option>
+            <option value="Failed">✖ Failed (Non-Compliant)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="modal-notes-input">Lab Testing Notes / Certificate Details</label>
+          <textarea id="modal-notes-input" rows="3" placeholder="e.g. Lab Certificate #LB-882: Moisture 17.1%, HMF 12mg/kg, passed antibiotic screening."></textarea>
+          <div class="input-hint">This update will append a new immutable block to the chain.</div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="btn-cancel-status-modal" class="btn btn-secondary">Cancel</button>
+          <button type="submit" id="btn-submit-status-update" class="btn btn-primary">
+            <span>🔒</span> Append Block & Update
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    <div style="max-width: 1200px; margin: 0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; align-items:center;">
+      <span><strong>Honey Chain</strong> — Academic DTI / Final-Year Prototype</span>
+      <span>Built with Node.js, Express, MongoDB & SHA-256 Hashing</span>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/batch-details.js"></script>
+</body>
+</html>

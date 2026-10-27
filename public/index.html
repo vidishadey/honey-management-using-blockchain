@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Honey Chain — Smart Beekeeping & Blockchain Traceability</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <span class="brand-icon">🍯</span>
+        <span>Honey Chain</span>
+        <span class="brand-tag">Blockchain MVP</span>
+      </a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link active">Dashboard</a></li>
+          <li><a href="register.html" class="nav-link">Register Batch</a></li>
+          <li><a href="blockchain.html" class="nav-link">Blockchain Ledger</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="header-title-group">
+        <h1>🐝 Beekeeper Management Dashboard</h1>
+        <p class="header-subtitle">Real-time harvest monitoring, quality certification, and cryptographic traceability</p>
+      </div>
+      <div>
+        <a href="register.html" class="btn btn-primary">
+          <span>➕</span> Register New Batch
+        </a>
+      </div>
+    </div>
+
+    <!-- Live Blockchain Integrity Banner -->
+    <div id="chain-status-banner" class="alert alert-info">
+      <span>⛓</span>
+      <div>
+        <strong>Cryptographic Ledger Status:</strong>
+        <span id="banner-chain-text">Verifying local blockchain ledger...</span>
+      </div>
+    </div>
+
+    <!-- Summary Statistics Grid -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Total Batches</div>
+          <div class="stat-value" id="stat-total-batches">--</div>
+        </div>
+        <div class="stat-icon">📦</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Harvested Honey</div>
+          <div class="stat-value" id="stat-total-kg">-- <small style="font-size:0.9rem; font-weight:normal;">kg</small></div>
+        </div>
+        <div class="stat-icon">🍯</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Quality Certified</div>
+          <div class="stat-value" id="stat-quality-passed">--</div>
+        </div>
+        <div class="stat-icon">✔</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Testing Pending</div>
+          <div class="stat-value" id="stat-quality-pending">--</div>
+        </div>
+        <div class="stat-icon">⏳</div>
+      </div>
+    </section>
+
+    <!-- Batch Registry Table Card -->
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title">
+          <span>📋</span> Registered Honey Batches
+        </h2>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          <input type="text" id="batch-search-input" placeholder="Search by batch ID, beekeeper, or hive..." style="max-width: 280px; padding:0.45rem 0.75rem; font-size:0.85rem;">
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Batch ID</th>
+              <th>Beekeeper / ID</th>
+              <th>Apiary & Origin</th>
+              <th>Hive ID</th>
+              <th>Harvest Date</th>
+              <th>Quantity (kg)</th>
+              <th>Quality Status</th>
+              <th>Blockchain Ledger</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="batch-table-body">
+            <tr>
+              <td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                Loading honey batches from database...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Global Footer -->
+  <footer>
+    <div style="max-width: 1200px; margin: 0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; align-items:center;">
+      <span><strong>Honey Chain</strong> — Academic DTI / Final-Year Prototype</span>
+      <span>Built with Node.js, Express, MongoDB & SHA-256 Hashing</span>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
