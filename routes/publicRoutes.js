@@ -1,6 +1,7 @@
 const express = require('express');
 const Batch = require('../models/Batch');
 const { validateChain, getBatchHistory } = require('../services/blockchain');
+const { classifyBatchStock } = require('../services/stockService');
 
 const router = express.Router();
 
@@ -29,8 +30,11 @@ router.get('/verify/:batchId', async (req, res) => {
     const chainValidation = await validateChain();
 
     // 3. Prepare public-safe data payload (no internal credentials)
+    const stockClassification = classifyBatchStock(batch);
     const publicData = {
       batchId: batch.batchId,
+      batchName: batch.batchName || `${batch.honeyVariety || 'Natural'} Honey Reserve`,
+      honeyVariety: batch.honeyVariety || 'Wildflower',
       beekeeperName: batch.beekeeperName,
       originLocation: batch.originLocation,
       hiveId: batch.hiveId,
@@ -39,6 +43,8 @@ router.get('/verify/:batchId', async (req, res) => {
       quantityKg: batch.quantityKg,
       qualityStatus: batch.qualityStatus,
       registeredAt: batch.createdAt,
+      isSampleData: Boolean(batch.isSampleData),
+      stockClassification,
       notes: batch.notes || 'None provided.',
     };
 

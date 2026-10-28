@@ -33,6 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     hideError();
 
+    const batchName = document.getElementById('batchName')?.value.trim() || '';
+    const honeyVariety = document.getElementById('honeyVariety')?.value || 'Wildflower';
     const beekeeperName = document.getElementById('beekeeperName').value.trim();
     const originLocation = document.getElementById('originLocation').value.trim();
     const hiveId = document.getElementById('hiveId').value.trim();
@@ -67,6 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
       submitBtn.innerHTML = '<span>⏳</span> Hashing & Anchoring on Blockchain...';
 
       const payload = {
+        batchName,
+        honeyVariety,
         beekeeperName,
         originLocation,
         hiveId,

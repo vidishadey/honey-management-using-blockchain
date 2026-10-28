@@ -18,6 +18,7 @@
       <nav>
         <ul class="nav-links">
           <li><a href="index.html" class="nav-link">Dashboard</a></li>
+          <li><a href="stock.html" class="nav-link">Honey Stock</a></li>
           <li><a href="register.html" class="nav-link active">Register Batch</a></li>
           <li><a href="blockchain.html" class="nav-link">Blockchain Ledger</a></li>
         </ul>
@@ -52,6 +53,37 @@
       </div>
 
       <form id="batch-registration-form" novalidate>
+        <!-- Row 0: Batch Name & Variety -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="batchName">
+              Batch Title / Reserve Name (Optional)
+            </label>
+            <input type="text" id="batchName" name="batchName" placeholder="e.g. Pine Valley Golden Reserve">
+            <div class="input-hint">Custom label name or defaults to Honey Variety Batch</div>
+          </div>
+
+          <div class="form-group">
+            <label for="honeyVariety">
+              Botanical Honey Variety <span class="required-star">*</span>
+            </label>
+            <select id="honeyVariety" name="honeyVariety" required>
+              <option value="Wildflower" selected>Wildflower</option>
+              <option value="Multiflora">Multiflora</option>
+              <option value="Eucalyptus">Eucalyptus</option>
+              <option value="Acacia">Acacia</option>
+              <option value="Forest Honey">Forest Honey</option>
+              <option value="Clover">Clover</option>
+              <option value="Lavender">Lavender</option>
+              <option value="Orange Blossom">Orange Blossom</option>
+              <option value="Manuka">Manuka</option>
+              <option value="Sidr">Sidr</option>
+              <option value="Other">Other</option>
+            </select>
+            <div class="input-hint">Floral nectar source classification</div>
+          </div>
+        </div>
+
         <!-- Row 1: Beekeeper & Location -->
         <div class="form-row">
           <div class="form-group">

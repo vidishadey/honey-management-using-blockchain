@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const statTotalKg = document.getElementById('stat-total-kg');
   const statQualityPassed = document.getElementById('stat-quality-passed');
   const statQualityPending = document.getElementById('stat-quality-pending');
+  const dashOldCount = document.getElementById('dash-old-count');
+  const dashNewCount = document.getElementById('dash-new-count');
   const batchTableBody = document.getElementById('batch-table-body');
   const searchInput = document.getElementById('batch-search-input');
   const chainBanner = document.getElementById('chain-status-banner');
@@ -38,6 +40,14 @@ document.addEventListener('DOMContentLoaded', () => {
       statQualityPassed.textContent = stats.statusCounts?.Passed || 0;
       statQualityPending.textContent = stats.statusCounts?.Pending || 0;
 
+      // Update Stock Overview Badges
+      if (dashOldCount) {
+        dashOldCount.textContent = `🏺 Old Stock: ${stats.oldStockCount || 0} batches`;
+      }
+      if (dashNewCount) {
+        dashNewCount.textContent = `🐝 New Stock: ${stats.newStockCount || 0} batches`;
+      }
+
       // Render Batches Table
       renderTable(allBatches);
     } catch (error) {
@@ -45,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Error loading dashboard data: ' + error.message, 'error');
       batchTableBody.innerHTML = `
         <tr>
-          <td colspan="9" style="text-align: center; padding: 2rem; color: #dc2626;">
+          <td colspan="11" style="text-align: center; padding: 2rem; color: #dc2626;">
             Failed to connect to backend server. Make sure the server and MongoDB are running.
           </td>
         </tr>`;
@@ -57,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!batches || batches.length === 0) {
       batchTableBody.innerHTML = `
         <tr>
-          <td colspan="9" style="text-align: center; padding: 3rem 1rem;">
+          <td colspan="11" style="text-align: center; padding: 3rem 1rem;">
             <div style="font-size: 2rem; margin-bottom: 0.5rem;">🐝</div>
             <p style="font-weight: 600; color: var(--text-primary);">No honey batches recorded yet</p>
             <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">Register your first honey harvest to anchor it onto the blockchain ledger.</p>
@@ -69,17 +79,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     batchTableBody.innerHTML = batches
       .map((batch) => {
+        const stockInfo = batch.stockClassification || {};
+        const isOld = stockInfo.isOldStock;
+        const stockClassBadge = isOld ? 'badge-old-stock' : 'badge-new-stock';
+        const stockLabel = isOld ? '🏺 Old Stock' : '🌱 New Stock';
+        const ageLabel = stockInfo.ageFormatted || '';
+
         return `
           <tr>
             <td class="mono-cell">
               <a href="batch-details.html?batchId=${encodeURIComponent(batch.batchId)}" title="View batch details">
                 ${batch.batchId}
               </a>
+              ${batch.isSampleData ? '<br><span class="badge-demo" style="font-size:0.65rem;">Sample</span>' : ''}
+            </td>
+            <td>
+              <span class="badge-variety">${escapeHtml(batch.honeyVariety || 'Wildflower')}</span>
             </td>
             <td><strong>${escapeHtml(batch.beekeeperName)}</strong></td>
             <td>${escapeHtml(batch.originLocation)}</td>
             <td><code style="background:var(--bg-gold-light); padding:2px 6px; border-radius:4px; font-size:0.85rem;">${escapeHtml(batch.hiveId)}</code></td>
             <td>${formatDate(batch.harvestDate)}</td>
+            <td>
+              <span class="badge ${stockClassBadge}" style="font-size:0.75rem;">
+                ${stockLabel}
+              </span>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                ${escapeHtml(ageLabel)}
+              </div>
+            </td>
             <td><strong>${Number(batch.quantityKg).toFixed(1)}</strong> kg</td>
             <td>${renderStatusBadge(batch.qualityStatus)}</td>
             <td>${renderBlockchainBadge(isChainValid)}</td>
@@ -109,10 +137,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       const filtered = allBatches.filter((b) => {
         return (
-          b.batchId.toLowerCase().includes(query) ||
-          b.beekeeperName.toLowerCase().includes(query) ||
-          b.originLocation.toLowerCase().includes(query) ||
-          b.hiveId.toLowerCase().includes(query)
+          (b.batchId && b.batchId.toLowerCase().includes(query)) ||
+          (b.beekeeperName && b.beekeeperName.toLowerCase().includes(query)) ||
+          (b.originLocation && b.originLocation.toLowerCase().includes(query)) ||
+          (b.hiveId && b.hiveId.toLowerCase().includes(query)) ||
+          (b.honeyVariety && b.honeyVariety.toLowerCase().includes(query)) ||
+          (b.displayName && b.displayName.toLowerCase().includes(query))
         );
       });
       renderTable(filtered);

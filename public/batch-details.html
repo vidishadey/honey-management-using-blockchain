@@ -33,6 +33,7 @@
       <nav>
         <ul class="nav-links">
           <li><a href="index.html" class="nav-link">Dashboard</a></li>
+          <li><a href="stock.html" class="nav-link">Honey Stock</a></li>
           <li><a href="register.html" class="nav-link">Register Batch</a></li>
           <li><a href="blockchain.html" class="nav-link">Blockchain Ledger</a></li>
         </ul>
@@ -82,6 +83,16 @@
           </div>
 
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1.25rem;">
+            <div>
+              <div style="font-size:0.82rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Honey Variety</div>
+              <div id="detail-variety" style="margin-top:0.2rem;"><span class="badge-variety">--</span></div>
+            </div>
+
+            <div>
+              <div style="font-size:0.82rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Stock Classification &amp; Age</div>
+              <div id="detail-stock-class" style="margin-top:0.2rem;">--</div>
+            </div>
+
             <div>
               <div style="font-size:0.82rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Beekeeper</div>
               <div id="detail-beekeeper" style="font-weight:600; font-size:1.05rem;">--</div>

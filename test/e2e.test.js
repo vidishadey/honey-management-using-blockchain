@@ -192,8 +192,59 @@ async function runEndToEndTests() {
     }
     console.log('  ✔ Block restored! Chain verification back to 100% valid.');
 
+    // TEST 11: Honey Stock Partitioning & Demonstration Batches
+    console.log('\n[Test 11] Seeding demonstration batches and verifying Honey Stock classification...');
+    const seedRes = await request('POST', '/api/batches/seed-samples');
+    if (seedRes.status !== 200) {
+      throw new Error(`Seeding failed: ${JSON.stringify(seedRes)}`);
+    }
+    console.log(`  ✔ Sample seeder executed. Total batches in DB: ${seedRes.data.totalBatches}`);
+
+    const stockRes = await request('GET', '/api/batches/stock');
+    if (stockRes.status !== 200 || !stockRes.data.oldStock || !stockRes.data.newStock) {
+      throw new Error(`Stock API call failed: ${JSON.stringify(stockRes)}`);
+    }
+
+    if (stockRes.data.oldStock.length === 0) {
+      throw new Error('Old Stock column should contain batches > 10 years old');
+    }
+    if (stockRes.data.newStock.length === 0) {
+      throw new Error('New Stock column should contain batches <= 10 years old');
+    }
+
+    // Verify all batches in oldStock are strictly > 10 years
+    for (const b of stockRes.data.oldStock) {
+      if (!b.stockClassification?.isOldStock) {
+        throw new Error(`Batch ${b.batchId} in Old Stock is not marked as isOldStock`);
+      }
+    }
+
+    // Verify all batches in newStock are <= 10 years
+    for (const b of stockRes.data.newStock) {
+      if (b.stockClassification?.isOldStock) {
+        throw new Error(`Batch ${b.batchId} in New Stock is marked as isOldStock`);
+      }
+    }
+
+    // Verify newly registered batch from Test 3 appears in New Stock
+    const foundNewBatch = stockRes.data.newStock.some((b) => b.batchId === createdBatchId);
+    if (!foundNewBatch) {
+      throw new Error(`Newly created batch ${createdBatchId} must appear in New Stock column`);
+    }
+
+    console.log(`  ✔ Old Stock contains ${stockRes.data.oldStock.length} batches (> 10 years old)`);
+    console.log(`  ✔ New Stock contains ${stockRes.data.newStock.length} batches (≤ 10 years old)`);
+    console.log(`  ✔ Newly registered batch ${createdBatchId} dynamically placed in New Stock`);
+
+    // Verify chain integrity after seeding demo blocks
+    const chainAfterSeed = await request('GET', '/api/blockchain/validate');
+    if (!chainAfterSeed.data.validation.isValid) {
+      throw new Error(`Chain compromised after seeding: ${chainAfterSeed.data.validation.reason}`);
+    }
+    console.log(`  ✔ Blockchain ledger 100% verified intact with ${chainAfterSeed.data.validation.blockCount} blocks!`);
+
     console.log('\n====================================================');
-    console.log('   ALL 10 END-TO-END TESTS PASSED WITH 100% SUCCESS!  ');
+    console.log('   ALL 11 END-TO-END TESTS PASSED WITH 100% SUCCESS!  ');
     console.log('====================================================\n');
 
     server.close();

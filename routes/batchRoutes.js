@@ -3,6 +3,8 @@ const QRCode = require('qrcode');
 const crypto = require('crypto');
 const Batch = require('../models/Batch');
 const { addBlock, getBatchHistory } = require('../services/blockchain');
+const { classifyBatchStock, partitionBatchesByStock } = require('../services/stockService');
+const { seedSampleBatches } = require('../services/sampleBatches');
 
 const router = express.Router();
 
@@ -17,12 +19,72 @@ function generateBatchId() {
 }
 
 /**
+ * GET /api/batches/stock
+ * Returns all batches partitioned into "Old Stock" (>10 years) and "New Stock" (<=10 years)
+ * with dynamic age calculation, aggregate weight, and category counts.
+ */
+router.get('/stock', async (req, res) => {
+  try {
+    const batches = await Batch.find().sort({ harvestDate: -1 }).lean();
+    const stockData = partitionBatchesByStock(batches);
+
+    return res.json({
+      success: true,
+      ...stockData,
+    });
+  } catch (error) {
+    console.error('[Error: GET /api/batches/stock]', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve honey stock categories: ' + error.message,
+    });
+  }
+});
+
+/**
+ * POST /api/batches/seed-samples
+ * Seeds 12 realistic demonstration batches (spanning 2012-2026) if not already present.
+ */
+router.post('/seed-samples', async (req, res) => {
+  try {
+    const seededCount = await seedSampleBatches();
+    const totalBatches = await Batch.countDocuments();
+    return res.json({
+      success: true,
+      message: `Sample seeding complete. ${seededCount} new demonstration batches anchored.`,
+      seededCount,
+      totalBatches,
+    });
+  } catch (error) {
+    console.error('[Error: POST /api/batches/seed-samples]', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to seed sample batches: ' + error.message,
+    });
+  }
+});
+
+/**
  * GET /api/batches
- * Beekeeper dashboard endpoint: list all batches with overall aggregate statistics.
+ * Beekeeper dashboard endpoint: list all batches with overall aggregate statistics
+ * and dynamic stock classifications.
  */
 router.get('/', async (req, res) => {
   try {
-    const batches = await Batch.find().sort({ createdAt: -1 }).lean();
+    const rawBatches = await Batch.find().sort({ createdAt: -1 }).lean();
+
+    // Augment batches with dynamic stock age classification
+    const batches = rawBatches.map((b) => {
+      const stockInfo = classifyBatchStock(b);
+      return {
+        ...b,
+        displayName: b.batchName || `${b.honeyVariety || 'Natural'} Honey Reserve`,
+        stockClassification: stockInfo,
+      };
+    });
+
+    const oldStockCount = batches.filter((b) => b.stockClassification?.isOldStock).length;
+    const newStockCount = batches.filter((b) => b.stockClassification?.isValidDate && !b.stockClassification?.isOldStock).length;
 
     // Compute summary metrics for the dashboard cards
     const stats = {
@@ -30,6 +92,8 @@ router.get('/', async (req, res) => {
       totalQuantityKg: Number(
         batches.reduce((sum, b) => sum + (b.quantityKg || 0), 0).toFixed(2)
       ),
+      oldStockCount,
+      newStockCount,
       statusCounts: {
         Pending: batches.filter((b) => b.qualityStatus === 'Pending').length,
         Passed: batches.filter((b) => b.qualityStatus === 'Passed').length,
@@ -59,6 +123,8 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const {
+      batchName = '',
+      honeyVariety = 'Wildflower',
       beekeeperName,
       originLocation,
       hiveId,
@@ -67,6 +133,7 @@ router.post('/', async (req, res) => {
       quantityKg,
       qualityStatus = 'Pending',
       notes = '',
+      isSampleData = false,
     } = req.body;
 
     // Strict Server-side Validation
@@ -114,6 +181,23 @@ router.post('/', async (req, res) => {
       validationErrors.push('Quality status must be Pending, Passed, or Failed.');
     }
 
+    const validVarieties = [
+      'Wildflower',
+      'Multiflora',
+      'Eucalyptus',
+      'Acacia',
+      'Forest Honey',
+      'Clover',
+      'Lavender',
+      'Orange Blossom',
+      'Manuka',
+      'Sidr',
+      'Other',
+    ];
+    if (honeyVariety && !validVarieties.includes(honeyVariety)) {
+      validationErrors.push(`Honey variety must be one of: ${validVarieties.join(', ')}`);
+    }
+
     if (validationErrors.length > 0) {
       return res.status(400).json({
         success: false,
@@ -124,14 +208,19 @@ router.post('/', async (req, res) => {
 
     // Generate unique batch ID
     let batchId = generateBatchId();
-    // Ensure uniqueness in rare case of collision
     while (await Batch.findOne({ batchId })) {
       batchId = generateBatchId();
     }
 
+    const finalBatchName = batchName && batchName.trim()
+      ? batchName.trim()
+      : `${honeyVariety} Honey Batch`;
+
     // 1. Persist batch in MongoDB
     const newBatch = new Batch({
       batchId,
+      batchName: finalBatchName,
+      honeyVariety: honeyVariety || 'Wildflower',
       beekeeperName: beekeeperName.trim(),
       originLocation: originLocation.trim(),
       hiveId: hiveId.trim(),
@@ -140,6 +229,7 @@ router.post('/', async (req, res) => {
       quantityKg: parsedQuantity,
       qualityStatus,
       notes: notes.trim(),
+      isSampleData: Boolean(isSampleData),
     });
 
     await newBatch.save();
@@ -147,6 +237,8 @@ router.post('/', async (req, res) => {
     // 2. Cryptographically link event to Blockchain Ledger
     const blockData = {
       action: 'Initial honey harvest and batch registration',
+      batchName: newBatch.batchName,
+      honeyVariety: newBatch.honeyVariety,
       beekeeperName: newBatch.beekeeperName,
       originLocation: newBatch.originLocation,
       hiveId: newBatch.hiveId,
@@ -159,10 +251,15 @@ router.post('/', async (req, res) => {
 
     const block = await addBlock(batchId, 'BATCH_REGISTERED', blockData);
 
+    const stockInfo = classifyBatchStock(newBatch);
+
     return res.status(201).json({
       success: true,
-      message: `Honey batch ${batchId} registered and anchored on blockchain ledger.`,
-      batch: newBatch,
+      message: `Honey batch ${batchId} (${newBatch.batchName}) registered and anchored on blockchain ledger.`,
+      batch: {
+        ...newBatch.toObject({ virtuals: true }),
+        stockClassification: stockInfo,
+      },
       blockchain: {
         blockIndex: block.index,
         blockHash: block.hash,
@@ -180,19 +277,27 @@ router.post('/', async (req, res) => {
 
 /**
  * GET /api/batches/:batchId
- * Retrieve individual batch details, its QR code data URL, and its blockchain event history.
+ * Retrieve individual batch details, its QR code data URL, stock classification,
+ * and its blockchain event history.
  */
 router.get('/:batchId', async (req, res) => {
   try {
     const { batchId } = req.params;
-    const batch = await Batch.findOne({ batchId }).lean();
+    const rawBatch = await Batch.findOne({ batchId }).lean();
 
-    if (!batch) {
+    if (!rawBatch) {
       return res.status(404).json({
         success: false,
         error: `Batch ${batchId} not found`,
       });
     }
+
+    const stockClassification = classifyBatchStock(rawBatch);
+    const batch = {
+      ...rawBatch,
+      displayName: rawBatch.batchName || `${rawBatch.honeyVariety || 'Natural'} Honey Reserve`,
+      stockClassification,
+    };
 
     // Generate QR code for the public consumer verification page
     const baseUrl = process.env.APP_BASE_URL || `http://${req.headers.host || 'localhost:3000'}`;
@@ -271,10 +376,15 @@ router.patch('/:batchId/status', async (req, res) => {
 
     const block = await addBlock(batchId, 'QUALITY_STATUS_UPDATED', blockData);
 
+    const stockClassification = classifyBatchStock(batch);
+
     return res.json({
       success: true,
       message: `Batch ${batchId} status updated to ${qualityStatus} and recorded on blockchain.`,
-      batch,
+      batch: {
+        ...batch.toObject({ virtuals: true }),
+        stockClassification,
+      },
       blockchain: {
         blockIndex: block.index,
         blockHash: block.hash,

@@ -10,6 +10,29 @@ const BatchSchema = new mongoose.Schema(
       uppercase: true,
       index: true,
     },
+    batchName: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    honeyVariety: {
+      type: String,
+      trim: true,
+      default: 'Wildflower',
+      enum: [
+        'Wildflower',
+        'Multiflora',
+        'Eucalyptus',
+        'Acacia',
+        'Forest Honey',
+        'Clover',
+        'Lavender',
+        'Orange Blossom',
+        'Manuka',
+        'Sidr',
+        'Other',
+      ],
+    },
     beekeeperName: {
       type: String,
       required: [true, 'Beekeeper name or ID is required'],
@@ -58,10 +81,27 @@ const BatchSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    isSampleData: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+// Virtual to ensure batch has a friendly display name
+BatchSchema.virtual('displayName').get(function () {
+  if (this.batchName && this.batchName.trim()) {
+    return this.batchName;
+  }
+  return `${this.honeyVariety || 'Natural'} Honey Reserve`;
+});
+
+// Ensure virtuals are serialized in JSON
+BatchSchema.set('toJSON', { virtuals: true });
+BatchSchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.model('Batch', BatchSchema);

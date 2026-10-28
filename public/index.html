@@ -18,6 +18,7 @@
       <nav>
         <ul class="nav-links">
           <li><a href="index.html" class="nav-link active">Dashboard</a></li>
+          <li><a href="stock.html" class="nav-link">Honey Stock</a></li>
           <li><a href="register.html" class="nav-link">Register Batch</a></li>
           <li><a href="blockchain.html" class="nav-link">Blockchain Ledger</a></li>
         </ul>
@@ -84,6 +85,27 @@
       </div>
     </section>
 
+    <!-- Honey Stock Quick Overview Banner -->
+    <section class="card" style="background:var(--bg-card-subtle); padding:1.15rem 1.35rem; margin-bottom:1.5rem; border:1px solid var(--border-gold);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <h3 style="font-size:1.05rem; display:flex; align-items:center; gap:0.4rem; color:var(--text-primary); margin-bottom:0.25rem;">
+            <span>🏺</span> Honey Stock Inventory Overview
+          </h3>
+          <p style="font-size:0.86rem; color:var(--text-secondary); margin:0;">
+            Dynamic age classification: Batches &gt;10 years old are grouped under <strong>Old Stock</strong>, ≤10 years under <strong>New Stock</strong>.
+          </p>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+          <span class="badge badge-old-stock" style="font-size:0.85rem; padding:0.35rem 0.75rem;" id="dash-old-count">🏺 Old Stock: --</span>
+          <span class="badge badge-new-stock" style="font-size:0.85rem; padding:0.35rem 0.75rem;" id="dash-new-count">🐝 New Stock: --</span>
+          <a href="stock.html" class="btn btn-secondary btn-sm" style="font-weight:700;">
+            <span>Open Two-Column Stock View →</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
     <!-- Batch Registry Table Card -->
     <section class="card">
       <div class="card-header">
@@ -91,7 +113,7 @@
           <span>📋</span> Registered Honey Batches
         </h2>
         <div style="display:flex; gap:0.5rem; align-items:center;">
-          <input type="text" id="batch-search-input" placeholder="Search by batch ID, beekeeper, or hive..." style="max-width: 280px; padding:0.45rem 0.75rem; font-size:0.85rem;">
+          <input type="text" id="batch-search-input" placeholder="Search by batch ID, name, variety, beekeeper..." style="max-width: 320px; padding:0.45rem 0.75rem; font-size:0.85rem;">
         </div>
       </div>
 
@@ -100,10 +122,12 @@
           <thead>
             <tr>
               <th>Batch ID</th>
+              <th>Variety</th>
               <th>Beekeeper / ID</th>
               <th>Apiary & Origin</th>
               <th>Hive ID</th>
               <th>Harvest Date</th>
+              <th>Stock Category & Age</th>
               <th>Quantity (kg)</th>
               <th>Quality Status</th>
               <th>Blockchain Ledger</th>
@@ -112,7 +136,7 @@
           </thead>
           <tbody id="batch-table-body">
             <tr>
-              <td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+              <td colspan="11" style="text-align: center; padding: 2rem; color: var(--text-muted);">
                 Loading honey batches from database...
               </td>
             </tr>

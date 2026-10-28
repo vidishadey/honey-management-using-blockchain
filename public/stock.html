@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Honey Stock Classification (Old vs. New Stock) — Honey Chain</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <span class="brand-icon">🍯</span>
+        <span>Honey Chain</span>
+        <span class="brand-tag">Blockchain MVP</span>
+      </a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link">Dashboard</a></li>
+          <li><a href="stock.html" class="nav-link active">Honey Stock</a></li>
+          <li><a href="register.html" class="nav-link">Register Batch</a></li>
+          <li><a href="blockchain.html" class="nav-link">Blockchain Ledger</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="header-title-group">
+        <h1>🏺 Honey Stock Classification</h1>
+        <p class="header-subtitle">Dynamic age-based inventory partitioning: Old Stock (> 10 Years) vs. New Stock (≤ 10 Years)</p>
+      </div>
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <button id="btn-seed-samples" class="btn btn-secondary btn-sm" title="Populate 12 demonstration batches">
+          <span>🌱</span> Seed Demo Batches
+        </button>
+        <a href="register.html" class="btn btn-primary btn-sm">
+          <span>➕</span> Register Batch
+        </a>
+      </div>
+    </div>
+
+    <!-- Rule Explanation Alert -->
+    <div class="alert alert-info" style="margin-bottom:1.5rem;">
+      <span>ℹ</span>
+      <div>
+        <strong>Automatic Dynamic Classification:</strong> Honey batches are evaluated relative to current calendar time. Batches harvested more than 10 years ago are classified as <strong>Old Stock</strong>, while batches 10 years old or newer are placed in <strong>New Stock</strong>. When a batch crosses the 10-year threshold, it moves automatically without manual intervention.
+      </div>
+    </div>
+
+    <!-- Summary Statistics Grid -->
+    <section class="stats-grid" style="margin-bottom: 1.5rem;">
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Old Stock (> 10 Yrs)</div>
+          <div class="stat-value" id="stat-old-count">--</div>
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.25rem;">
+            Total: <strong id="stat-old-kg" style="color:var(--primary-dark-gold);">--</strong> kg
+          </div>
+        </div>
+        <div class="stat-icon" style="background:#fffbeb; border-color:#fde68a;">🏺</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">New Stock (≤ 10 Yrs)</div>
+          <div class="stat-value" id="stat-new-count">--</div>
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.25rem;">
+            Total: <strong id="stat-new-kg" style="color:#065f46;">--</strong> kg
+          </div>
+        </div>
+        <div class="stat-icon" style="background:#ecfdf5; border-color:#a7f3d0;">🐝</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Total Inventory</div>
+          <div class="stat-value" id="stat-total-batches">--</div>
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.25rem;">
+            All Batches: <strong id="stat-total-kg">--</strong> kg
+          </div>
+        </div>
+        <div class="stat-icon">📦</div>
+      </div>
+    </section>
+
+    <!-- Search & Filter Controls Card -->
+    <section class="card" style="padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap; flex:1;">
+          <input type="text" id="stock-search-input" placeholder="Search by batch name, ID, beekeeper, or location..." style="max-width: 380px; padding:0.5rem 0.85rem; font-size:0.88rem;">
+          <select id="variety-filter-select" style="max-width: 200px; padding:0.5rem 0.85rem; font-size:0.88rem;">
+            <option value="">All Honey Varieties</option>
+            <option value="Wildflower">Wildflower</option>
+            <option value="Multiflora">Multiflora</option>
+            <option value="Eucalyptus">Eucalyptus</option>
+            <option value="Acacia">Acacia</option>
+            <option value="Forest Honey">Forest Honey</option>
+            <option value="Clover">Clover</option>
+            <option value="Lavender">Lavender</option>
+            <option value="Orange Blossom">Orange Blossom</option>
+            <option value="Manuka">Manuka</option>
+          </select>
+        </div>
+        <div style="font-size:0.85rem; color:var(--text-muted);" id="filter-status-text">
+          Showing all stock
+        </div>
+      </div>
+    </section>
+
+    <!-- Side-by-Side Two Columns Grid -->
+    <div class="stock-columns-grid">
+      <!-- LEFT COLUMN: Old Stock (> 10 Years) -->
+      <div class="stock-column">
+        <div class="stock-column-header">
+          <div class="stock-column-title">
+            <span style="font-size:1.4rem;">🏺</span>
+            <span>Old Stock</span>
+            <span class="badge badge-old-stock">&gt; 10 Years Old</span>
+          </div>
+          <span class="badge" style="background:#fffbeb; color:#92400e; font-weight:700;" id="badge-old-count">0 Batches</span>
+        </div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+          Vintage reserves harvested more than 10 years ago relative to current date.
+        </p>
+
+        <!-- Old Stock Cards List -->
+        <div class="stock-card-list" id="old-stock-list">
+          <div class="empty-stock-box">
+            <div class="empty-icon">🏺</div>
+            <p><strong>Loading Old Stock batches...</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: New Stock (<= 10 Years) -->
+      <div class="stock-column">
+        <div class="stock-column-header">
+          <div class="stock-column-title">
+            <span style="font-size:1.4rem;">🐝</span>
+            <span>New Stock</span>
+            <span class="badge badge-new-stock">≤ 10 Years Old</span>
+          </div>
+          <span class="badge" style="background:#ecfdf5; color:#065f46; font-weight:700;" id="badge-new-count">0 Batches</span>
+        </div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+          Recent harvests collected within the last 10 years.
+        </p>
+
+        <!-- New Stock Cards List -->
+        <div class="stock-card-list" id="new-stock-list">
+          <div class="empty-stock-box">
+            <div class="empty-icon">🐝</div>
+            <p><strong>Loading New Stock batches...</strong></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Global Footer -->
+  <footer>
+    <div style="max-width: 1200px; margin: 0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; align-items:center;">
+      <span><strong>Honey Chain</strong> — Academic DTI / Final-Year Prototype</span>
+      <span>Built with Node.js, Express, MongoDB & SHA-256 Hashing</span>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/stock.js"></script>
+</body>
+</html>

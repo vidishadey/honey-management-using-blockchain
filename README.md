@@ -106,29 +106,34 @@ honey-chain/
 │   ├── Batch.js               # Mongoose schema for Honey Batch documents
 │   └── Block.js               # Mongoose schema for Blockchain Blocks
 ├── services/
-│   └── blockchain.js          # Core SHA-256 cryptographic chain logic & validation
+│   ├── blockchain.js          # Core SHA-256 cryptographic chain logic & validation
+│   ├── stockService.js        # Dynamic 10-year age boundary classification logic
+│   └── sampleBatches.js       # 12 realistic demonstration batches (2012-2026)
 ├── routes/
-│   ├── batchRoutes.js         # Honey batch CRUD & history updates
+│   ├── batchRoutes.js         # Honey batch CRUD, stock partitioning & history updates
 │   ├── blockchainRoutes.js    # Chain verification & controlled tamper endpoints
 │   └── publicRoutes.js        # Public-safe verification for QR code scans
 ├── public/
-│   ├── index.html             # Beekeeper Dashboard
-│   ├── register.html          # Batch Registration Form
+│   ├── index.html             # Beekeeper Dashboard with Stock Inventory Overview
+│   ├── stock.html             # Two-Column Honey Stock Page (Old Stock vs. New Stock)
+│   ├── register.html          # Batch Registration Form (with Variety & Reserve Name)
 │   ├── batch-details.html     # Batch Details, QR label display, download & print
 │   ├── blockchain.html        # Chain integrity dashboard & Viva Tamper Studio
 │   ├── verify.html            # Public Consumer verification certificate
 │   ├── css/
-│   │   └── style.css          # Honey-gold/cream accessible theme
+│   │   └── style.css          # Honey-gold/cream accessible theme & responsive stock grid
 │   └── js/
 │       ├── api.js             # Shared fetch utilities & toast notifications
 │       ├── dashboard.js       # Dashboard logic & batch directory
+│       ├── stock.js           # Honey Stock two-column dynamic renderer & filters
 │       ├── register.js        # Form validation & registration submission
 │       ├── batch-details.js   # QR display, status update modal & timeline
 │       ├── blockchain.js      # Ledger explorer & tamper simulator
 │       └── verify.js          # Public verification certificate & 3-pillar banner
 └── test/
     ├── blockchain.test.js     # Blockchain unit tests (hashing, tamper detection)
-    └── e2e.test.js            # Complete 10-point end-to-end integration test
+    ├── stockClassification.test.js # 10-year boundary & dynamic age unit tests
+    └── e2e.test.js            # Complete 11-point end-to-end integration test
 ```
 
 ---
@@ -180,6 +185,7 @@ npm start
 
 ### 4. Access the Application:
 - **Beekeeper Dashboard:** [http://localhost:3000](http://localhost:3000)
+- **Honey Stock Classification:** [http://localhost:3000/stock.html](http://localhost:3000/stock.html)
 - **Batch Registration:** [http://localhost:3000/register.html](http://localhost:3000/register.html)
 - **Blockchain Ledger Explorer:** [http://localhost:3000/blockchain.html](http://localhost:3000/blockchain.html)
 - **Public Consumer Verification:** [http://localhost:3000/verify.html](http://localhost:3000/verify.html)
@@ -189,13 +195,18 @@ npm start
 ## 6. Implemented Features & Limitations
 
 ### Implemented Features:
-1. **Beekeeper Dashboard:** Real-time metrics for total batches, harvested quantity (kg), certified tests, and live ledger integrity status.
-2. **Strict Server-Side Validation:** Ensures harvest dates are not in the future, extraction date is on or after harvest date, and quantity is greater than 0 kg.
-3. **Persistent Hash-Linked Ledger:** Every batch creation and quality status change generates a SHA-256 block stored persistently in MongoDB.
-4. **QR Code Generator:** Automatically creates a high-contrast QR code pointing to the public consumer verification page. Supports instant PNG download and jar label printing.
-5. **Consumer Verification Certificate:** A dedicated public page designed for honey consumers scanning a jar QR code.
-6. **Controlled Tamper Demonstration Studio:** An interactive module that directly modifies a block's MongoDB payload without recalculating its hash, proving to examiners that cryptographic verification detects unauthorized changes.
-7. **Automated Test Suite:** Includes automated unit tests and a 10-step end-to-end integration test.
+1. **Beekeeper Dashboard:** Real-time metrics for total batches, harvested quantity (kg), certified tests, dynamic stock overview, and live ledger integrity status.
+2. **Honey Stock Classification (Old vs. New Stock):** Dedicated two-column responsive view dividing inventory dynamically:
+   - **Old Stock:** Honey batches harvested more than 10 years ago.
+   - **New Stock:** Honey batches harvested 10 years ago or less.
+   - Automatically migrates batches from New Stock to Old Stock as time advances without manual database updates.
+3. **12 Realistic Demonstration Batches:** Spans 2012–2026 across botanical varieties (Multiflora, Eucalyptus, Forest Honey, Acacia, Wildflower, Clover, Lavender, Orange Blossom, Manuka), each anchored to the blockchain ledger and clearly labeled as fictional demo data.
+4. **Strict Server-Side Validation:** Ensures harvest dates are not in the future, extraction date is on or after harvest date, and quantity is greater than 0 kg.
+5. **Persistent Hash-Linked Ledger:** Every batch creation and quality status change generates a SHA-256 block stored persistently in MongoDB.
+6. **QR Code Generator:** Automatically creates a high-contrast QR code pointing to the public consumer verification page. Supports instant PNG download and jar label printing.
+7. **Consumer Verification Certificate:** A dedicated public page designed for honey consumers scanning a jar QR code.
+8. **Controlled Tamper Demonstration Studio:** An interactive module that directly modifies a block's MongoDB payload without recalculating its hash, proving to examiners that cryptographic verification detects unauthorized changes.
+9. **Automated Test Suite:** Includes automated unit tests (blockchain, stock classification) and an 11-step end-to-end integration test.
 
 ### Academic Limitations (Viva Transparency):
 - **Single-Node Prototype vs Decentralization:** This MVP is a *local cryptographic ledger*. It uses SHA-256 parent-child hashing identical to a blockchain, but is stored in MongoDB rather than distributed across thousands of peer-to-peer nodes with Proof-of-Work or Proof-of-Stake consensus.
@@ -209,15 +220,19 @@ npm start
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
 | `GET` | `/api/health` | Public | Server uptime and health check |
-| `GET` | `/api/batches` | Beekeeper | List all batches with aggregate statistics |
+| `GET` | `/api/batches` | Beekeeper | List all batches with aggregate statistics & age metadata |
+| `GET` | `/api/batches/stock` | Beekeeper/Public | Partition batches into Old Stock (>10 yrs) and New Stock (≤10 yrs) |
+| `POST` | `/api/batches/seed-samples` | Beekeeper/Demo | Seed 12 demonstration batches spanning 2012–2026 anchored to ledger |
 | `POST` | `/api/batches` | Beekeeper | Register batch, validate inputs, persist, and anchor Block 1 |
-| `GET` | `/api/batches/:batchId` | Beekeeper | Get batch details, QR Code Data URL, and history |
+| `GET` | `/api/batches/:batchId` | Beekeeper | Get batch details, QR Code Data URL, stock age, and history |
 | `PATCH`| `/api/batches/:batchId/status` | Beekeeper | Update status (Pending/Passed/Failed) & anchor new Block |
 | `POST` | `/api/batches/:batchId/event` | Beekeeper | Add lifecycle event (Packaging/Distribution) & anchor Block |
 | `GET` | `/api/blockchain` | Public | Return all blocks and chain validation status |
 | `GET` | `/api/blockchain/validate` | Public | Run full cryptographic verification across all blocks |
 | `GET` | `/api/blockchain/history/:batchId` | Public | Fetch chronological blockchain audit blocks for a batch |
 | `POST` | `/api/blockchain/tamper` | Demo | Viva tool: modify MongoDB data directly to test detection |
+| `POST` | `/api/blockchain/restore` | Demo | Viva tool: restore tampered block to original pristine state |
+| `GET` | `/api/public/verify/:batchId` | Consumer | Public-safe certificate data with 3-pillar disclaimer |
 | `POST` | `/api/blockchain/restore` | Demo | Viva tool: restore tampered block to original pristine state |
 | `GET` | `/api/public/verify/:batchId` | Consumer | Public-safe certificate data with 3-pillar disclaimer |
 

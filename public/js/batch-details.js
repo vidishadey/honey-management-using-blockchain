@@ -61,6 +61,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
       btnConsumerView.href = `verify.html?batchId=${encodeURIComponent(currentBatchData.batchId)}`;
 
+      const detailVariety = document.getElementById('detail-variety');
+      const detailStockClass = document.getElementById('detail-stock-class');
+
+      if (detailVariety) {
+        detailVariety.innerHTML = `<span class="badge-variety">${escapeHtml(currentBatchData.honeyVariety || 'Wildflower')}</span>`;
+      }
+
+      if (detailStockClass) {
+        const stock = currentBatchData.stockClassification || {};
+        const isOld = stock.isOldStock;
+        const badgeClass = isOld ? 'badge-old-stock' : 'badge-new-stock';
+        const icon = isOld ? '🏺' : '🌱';
+        detailStockClass.innerHTML = `
+          <span class="badge ${badgeClass}">${icon} ${escapeHtml(stock.category || 'Stock')}</span>
+          <span style="font-size:0.83rem; color:var(--text-muted); margin-left:0.35rem;">(${escapeHtml(stock.ageFormatted || '')})</span>
+        `;
+      }
+
       detailBeekeeper.textContent = currentBatchData.beekeeperName;
       detailOrigin.textContent = currentBatchData.originLocation;
       detailHive.textContent = currentBatchData.hiveId;

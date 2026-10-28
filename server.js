@@ -4,6 +4,7 @@ const path = require('path');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const { initializeGenesisBlock } = require('./services/blockchain');
+const { seedSampleBatches } = require('./services/sampleBatches');
 
 const batchRoutes = require('./routes/batchRoutes');
 const blockchainRoutes = require('./routes/blockchainRoutes');
@@ -62,6 +63,8 @@ async function startServer() {
     await connectDB();
     // Ensure genesis block is initialized in the ledger
     await initializeGenesisBlock();
+    // Seed demonstration sample batches if needed
+    await seedSampleBatches();
 
     app.listen(PORT, () => {
       console.log('====================================================');

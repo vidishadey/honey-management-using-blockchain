@@ -73,7 +73,23 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderCertificate(data) {
     const { batch, history, blockchainVerification, educationalDisclaimer } = data;
 
+    const certVariety = document.getElementById('cert-variety');
+    const certStockClass = document.getElementById('cert-stock-class');
+
     certBatchId.textContent = batch.batchId;
+    if (certVariety) {
+      certVariety.innerHTML = `<span class="badge-variety">${escapeHtml(batch.honeyVariety || 'Wildflower')}</span>`;
+    }
+    if (certStockClass) {
+      const stock = batch.stockClassification || {};
+      const isOld = stock.isOldStock;
+      const badgeClass = isOld ? 'badge-old-stock' : 'badge-new-stock';
+      const icon = isOld ? '🏺' : '🌱';
+      certStockClass.innerHTML = `
+        <span class="badge ${badgeClass}">${icon} ${escapeHtml(stock.category || 'Stock')}</span>
+        <span style="font-size:0.8rem; color:var(--text-muted); margin-left:0.25rem;">(${escapeHtml(stock.ageFormatted || '')})</span>
+      `;
+    }
     certBeekeeper.textContent = batch.beekeeperName;
     certOrigin.textContent = batch.originLocation;
     certHive.textContent = batch.hiveId;
